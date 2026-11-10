@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://robloxhihi.github.io/quoc-khanh-1945/sitemap.xml

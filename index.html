@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>02.09.1945 — Đêm Ba Đình · Trình chiếu Quốc khánh Việt Nam</title>
+<meta name="description" content="Trình chiếu điện ảnh toàn màn hình về ngày 2 tháng 9 năm 1945 tại Quảng trường Ba Đình: ảnh tư liệu, nhạc nền, lời Tuyên ngôn Độc lập của Chủ tịch Hồ Chí Minh và pháo hoa.">
+<meta name="theme-color" content="#0A0714">
+<meta property="og:type" content="website">
+<meta property="og:title" content="02.09.1945 — Đêm Ba Đình">
+<meta property="og:description" content="Một buổi chiều ở Ba Đình, một quốc gia bắt đầu. Trình chiếu 9 cảnh có nhạc, ảnh tư liệu và pháo hoa.">
+<meta property="og:image" content="assets/img/le-dai.webp">
+<meta property="og:locale" content="vi_VN">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/playfair-display-900-vietnamese.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/be-vietnam-pro-400-vietnamese.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/img/le-dai.webp" as="image">
+<link rel="stylesheet" href="assets/css/fonts.css">
+<link rel="stylesheet" href="assets/css/style.css">
+<script>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+
+<!-- ══ nền nhiều lớp: mesh gradient + aurora + grain ══ -->
+<div class="backdrop" aria-hidden="true">
+  <div class="mesh"></div>
+  <div class="aurora aurora--a"></div>
+  <div class="aurora aurora--b"></div>
+  <div class="aurora aurora--c"></div>
+  <div class="grain"></div>
+  <div class="vignette"></div>
+</div>
+
+<!-- ══ canvas hiệu ứng: sao, tàn lửa, pháo hoa ══ -->
+<canvas id="fx" class="fx" aria-hidden="true"></canvas>
+<div id="flash" class="flash" aria-hidden="true"></div>
+
+<!-- ══ thanh trên cùng ══ -->
+<header class="topbar" id="topbar">
+  <a class="brand" href="#gate" id="brandLink">
+    <svg class="brand-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.6l3.1 6.9 7.5.8-5.6 5 1.6 7.4L12 17.9 5.4 21.7 7 14.3 1.4 9.3l7.5-.8z"/></svg>
+    <span class="brand-txt"><b>02.09.1945</b><i>Đêm Ba Đình</i></span>
+  </a>
+
+  <div class="now" aria-live="polite">
+    <span class="now-idx" id="nowIdx">00</span>
+    <span class="now-sep">/</span>
+    <span class="now-total">09</span>
+    <span class="now-name" id="nowName">Chờ bắt đầu</span>
+  </div>
+
+  <div class="top-actions">
+    <button class="ctl ctl--mute" id="btnMute" type="button" aria-pressed="false" title="Bật / tắt toàn bộ âm thanh (M)">
+      <svg class="i-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 010 7M19 6a8.5 8.5 0 010 12" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <svg class="i-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9.5l4 5m0-5l-4 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span class="ctl-label" id="muteLabel">Âm thanh: BẬT</span>
+    </button>
+    <button class="ctl" id="btnFull" type="button" title="Toàn màn hình (F)" aria-label="Toàn màn hình">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </button>
+    <button class="ctl" id="btnCredits" type="button" title="Nguồn tư liệu & bản quyền" aria-label="Nguồn tư liệu và bản quyền">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 10.6v6M12 7.4v.1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ══ cổng vào ══ -->
+<div class="gate" id="gate">
+  <div class="gate-inner">
+    <span class="gate-kicker">NƯỚC VIỆT NAM DÂN CHỦ CỘNG HÒA · 1945</span>
+
+    <div class="gate-date" aria-label="Ngày 2 tháng 9 năm 1945">
+      <span class="gd gd--d">02</span><span class="gd gd--dot">.</span><span class="gd gd--m">09</span><span class="gd gd--dot">.</span><span class="gd gd--y">1945</span>
+    </div>
+
+    <h1 class="gate-title">Một buổi chiều ở Ba&nbsp;Đình,<br><em>một quốc gia bắt đầu.</em></h1>
+
+    <p class="gate-sub">Trình chiếu 9 cảnh · ảnh tư liệu thật · nhạc nền · lời Bác Hồ · pháo hoa.<br>Dài khoảng 1 phút 40 giây, tự chạy hoặc bấm để chuyển cảnh.</p>
+
+    <div class="gate-cta">
+      <button class="start" id="btnStart" type="button">
+        <span class="start-ring" aria-hidden="true"></span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2v13.6L19 12z"/></svg>
+        <span>BẮT ĐẦU TRÌNH CHIẾU</span>
+      </button>
+      <button class="start-quiet" id="btnStartMuted" type="button">Xem mà không cần âm thanh</button>
+    </div>
+
+    <p class="gate-note">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 010 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      Trình chiếu có nhạc — bật loa để nghe trọn vẹn.
+    </p>
+
+    <ul class="gate-keys">
+      <li><kbd>←</kbd><kbd>→</kbd> chuyển cảnh</li>
+      <li><kbd>Space</kbd> tạm dừng</li>
+      <li><kbd>M</kbd> tắt tiếng</li>
+      <li><kbd>F</kbd> toàn màn hình</li>
+    </ul>
+  </div>
+  <div class="gate-foot">
+    <span>Ảnh tư liệu: Trung tâm Lưu trữ Quốc gia III · Wikimedia Commons · phạm vi công cộng</span>
+  </div>
+</div>
+
+<!-- ══ sân khấu 9 cảnh ══ -->
+<main class="stage" id="stage" aria-label="Trình chiếu Quốc khánh 2 tháng 9">
+
+  <!-- 01 · MỞ MÀN -->
+  <section class="scene scene--s1" id="s1" data-scene="1" data-dur="9000" data-grade="indigo" aria-label="Cảnh 1: Mở màn">
+    <div class="scene-media" data-kb="out">
+      <img src="assets/img/le-dai.webp" alt="Toàn cảnh lễ đài và đội danh dự tại Quảng trường Ba Đình ngày 2 tháng 9 năm 1945" fetchpriority="high">
+    </div>
+    <div class="scene-tint"></div>
+    <div class="scene-scrim"></div>
+    <span class="ghost ghost--year" aria-hidden="true">1945</span>
+    <div class="scene-body s1-body">
+      <span class="eyebrow" data-anim="up">QUẢNG TRƯỜNG BA ĐÌNH · HÀ NỘI · 14 GIỜ</span>
+      <h2 class="display display--xl">
+        <span class="line"><span data-anim="line" style="--d:0">Một buổi chiều</span></span>
+        <span class="line"><span data-anim="line" style="--d:1">ở Ba&nbsp;Đình,</span></span>
+        <span class="line"><span data-anim="line" style="--d:2"><em>một quốc gia</em></span></span>
+        <span class="line"><span data-anim="line" style="--d:3">bắt đầu.</span></span>
+      </h2>
+      <p class="lede" data-anim="up" style="--d:5">Ngày 2 tháng 9 năm 1945, bản Tuyên ngôn Độc lập khai sinh nước Việt Nam Dân chủ Cộng hòa.</p>
+      <div class="s1-meta" data-anim="up" style="--d:6">
+        <span class="rule"></span>
+        <span>9 cảnh · 1945 → 2026</span>
+      </div>
+    </div>
+    <figure class="photo-credit" data-anim="fade">Lễ đài Ba Đình, 2.9.1945 — Trung tâm Lưu trữ Quốc gia III</figure>
+  </section>
+
+  <!-- 02 · BỐI CẢNH -->
+  <section class="scene scene--s2" id="s2" data-scene="2" data-dur="10000" data-grade="azure" aria-label="Cảnh 2: Bối cảnh Cách mạng Tháng Tám">
+    <div class="scene-media scene-media--split" data-kb="in">
+      <img src="assets/img/nha-hat-lon.webp" alt="Mít tinh chào mừng Cách mạng Tháng Tám tại Nhà hát Lớn Hà Nội năm 1945" loading="lazy">
+    </div>
+    <div class="scene-tint"></div>
+    <div class="scene-scrim scene-scrim--left"></div>
+    <div class="scene-body s2-body">
+      <span class="eyebrow" data-anim="up">01 · BỐI CẢNH</span>
+      <h2 class="display display--lg">
+        <span class="line"><span data-anim="line" style="--d:0">Cách mạng</span></span>
+        <span class="line"><span data-anim="line" style="--d:1"><em>Tháng Tám</em></span></span>
+      </h2>
+      <p class="lede" data-anim="up" style="--d:2">Chỉ trong hai tuần cuối tháng Tám, chính quyền thực dân sụp đổ trên khắp ba miền. Cả nước hướng về Hà Nội.</p>
+      <ol class="milestones">
+        <li data-anim="pop" style="--d:3"><b>19.08</b><span>Khởi nghĩa thắng ở Hà Nội</span></li>
+        <li data-anim="pop" style="--d:4"><b>23.08</b><span>Triều đình Huế đầu hàng</span></li>
+        <li data-anim="pop" style="--d:5"><b>25.08</b><span>Sài Gòn và Nam Bộ giành chính quyền</span></li>
+        <li data-anim="pop" style="--d:6"><b>30.08</b><span>Vua Bảo Đại thoái vị</span></li>
+      </ol>
+    </div>
+    <figure class="photo-credit" data-anim="fade">Nhà hát Lớn Hà Nội, 1945 — ảnh tư liệu, phạm vi công cộng</figure>
+  </section>
+
+  <!-- 03 · LỄ ĐÀI -->
+  <section class="scene scene--s3" id="s3" data-scene="3" data-dur="10000" data-grade="crimson" aria-label="Cảnh 3: Biển người Ba Đình">
+    <div class="scene-media" data-kb="in">
+      <img src="assets/img/le-dai-detail.webp" alt="Chi tiết lễ đài, cờ và đội danh dự tại Quảng trường Ba Đình ngày 2.9.1945" loading="lazy">
+    </div>
+    <div class="scene-tint"></div>
+    <div class="scene-scrim"></div>
+    <span class="ghost ghost--word" aria-hidden="true">BA ĐÌNH</span>
+    <div class="scene-body s3-body">
+      <span class="eyebrow" data-anim="up">02 · LỄ ĐÀI</span>
+      <h2 class="display display--lg">
+        <span class="line"><span data-anim="line" style="--d:0">Hàng vạn người</span></span>
+        <span class="line"><span data-anim="line" style="--d:1">đổ về <em>Ba Đình</em></span></span>
+      </h2>
+      <p class="lede" data-anim="up" style="--d:2">Nắng chiều tháng chín. Cờ đỏ rực trên lễ đài, đội danh dự đứng nghiêm dưới cột cờ. Cả quảng trường nín thở chờ giờ khai mạc.</p>
+      <div class="stamp" data-anim="pop" style="--d:3">
+        <span class="stamp-dot"></span>
+        <b>14:00</b><i>02.09.1945</i>
+      </div>
+    </div>
+    <figure class="photo-credit" data-anim="fade">Đội danh dự và lễ đài Ba Đình — Trung tâm Lưu trữ Quốc gia III</figure>
+  </section>
+
+  <!-- 04 · NHÂN VẬT -->
+  <section class="scene scene--s4" id="s4" data-scene="4" data-dur="10000" data-grade="amber" aria-label="Cảnh 4: Chủ tịch Hồ Chí Minh">
+    <div class="scene-media scene-media--portrait" data-kb="in">
+      <img src="assets/img/bac-ho-doc.webp" alt="Chủ tịch Hồ Chí Minh trên lễ đài tại Quảng trường Ba Đình ngày 2.9.1945" loading="lazy">
+    </div>
+    <div class="scene-tint"></div>
+    <div class="scene-scrim scene-scrim--left"></div>
+    <div class="spotlight" aria-hidden="true"></div>
+    <div class="scene-body s4-body">
+      <span class="eyebrow" data-anim="up">03 · NHÂN VẬT</span>
+      <h2 class="display display--lg">
+        <span class="line"><span data-anim="line" style="--d:0">Chủ tịch</span></span>
+        <span class="line"><span data-anim="line" style="--d:1"><em>Hồ Chí Minh</em></span></span>
+      </h2>
+      <p class="lede" data-anim="up" style="--d:2">Vị Chủ tịch đầu tiên của nước Việt Nam Dân chủ Cộng hòa bước lên lễ đài. Trước quốc dân đồng bào và thế giới, Người đọc bản Tuyên ngôn Độc lập.</p>
+      <div class="s4-tag" data-anim="pop" style="--d:3">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.6 1.4 6.8L12 17l-6.1 3.5 1.4-6.8L2.2 9.1l6.9-.8z"/></svg>
+        <span>Người khai sinh một nhà nước mới</span>
+      </div>
+    </div>
+    <figure class="photo-credit" data-anim="fade">Lễ đài Ba Đình, 2.9.1945 — ảnh tư liệu, phạm vi công cộng</figure>
+  </section>
+
+  <!-- 05 · TUYÊN NGÔN -->
+  <section class="scene scene--s5" id="s5" data-scene="5" data-dur="16000" data-grade="jade" aria-label="Cảnh 5: Lời Tuyên ngôn Độc lập">
+    <div class="scene-media scene-media--doc" data-kb="pan">
+      <img src="assets/img/tuyen-ngon.webp" alt="Bản đánh máy ba trang của Tuyên ngôn Độc lập năm 1945" loading="lazy">
+    </div>
+    <div class="scene-tint"></div>
+    <div class="scene-scrim scene-scrim--heavy"></div>
+    <span class="quote-mark quote-mark--open" aria-hidden="true">“</span>
+    <div class="scene-body s5-body">
+      <span class="eyebrow" data-anim="up">04 · LỜI BÁC</span>
+      <p class="kicker" data-anim="up" style="--d:1">Hỡi đồng bào cả nước,</p>
+      <blockquote class="kinetic" id="kinetic1" data-kinetic>
+        Tất cả mọi người đều sinh ra có quyền <mark>bình đẳng</mark>. Tạo hóa cho họ những quyền không ai có thể xâm phạm được; trong những quyền ấy, có quyền <mark>được sống</mark>, quyền <mark>tự do</mark> và quyền <mark>mưu cầu hạnh phúc</mark>.
+      </blockquote>
+      <div class="quote-src" data-anim="up" style="--d:2">
+        <span class="rule"></span>
+        Tuyên ngôn Độc lập · Hồ Chí Minh · 2.9.1945
+      </div>
+    </div>
+    <span class="quote-mark quote-mark--close" aria-hidden="true">”</span>
+  </section>
+
+  <!-- 06 · LỜI THỀ -->
+  <section class="scene scene--s6" id="s6" data-scene="6" data-dur="13000" data-grade="magenta" aria-label="Cảnh 6: Lời thề giữ nước">
+    <div class="scene-media scene-media--right" data-kb="out">
+      <img src="assets/img/bac-ho-giap.webp" alt="Chủ tịch Hồ Chí Minh và Đại tướng Võ Nguyên Giáp tại Hà Nội tháng 8 năm 1945" loading="lazy">
+    </div>
+    <div class="scene-tint"></div>
+    <div class="scene-scrim scene-scrim--left"></div>
+    <div class="scene-body s6-body">
+      <span class="eyebrow" data-anim="up">05 · LỜI THỀ</span>
+      <blockquote class="kinetic kinetic--md" id="kinetic2" data-kinetic>
+        Nước Việt Nam có quyền hưởng <mark>tự do và độc lập</mark>, và sự thật đã thành một nước tự do độc lập.
+      </blockquote>
+      <blockquote class="kinetic kinetic--oath" id="kinetic3" data-kinetic data-delay="5200">
+        Toàn thể dân tộc Việt Nam quyết đem tất cả <mark>tinh thần và lực lượng</mark>, tính mạng và của cải để giữ vững quyền tự do, độc lập ấy.
+      </blockquote>
+      <div class="quote-src" data-anim="up" style="--d:2"><span class="rule"></span>Tuyên ngôn Độc lập, 2.9.1945</div>
+    </div>
+    <figure class="photo-credit" data-anim="fade">Hồ Chí Minh và Võ Nguyên Giáp, Hà Nội, tháng 8.1945</figure>
+  </section>
+
+  <!-- 07 · LÁ CỜ -->
+  <section class="scene scene--s7" id="s7" data-scene="7" data-dur="10000" data-grade="gold" aria-label="Cảnh 7: Cờ đỏ sao vàng">
+    <div class="scene-media scene-media--dim" data-kb="out">
+      <img src="assets/img/ba-dinh.webp" alt="Cột cờ và lễ đài tại vườn hoa Ba Đình ngày 2 tháng 9 năm 1945" loading="lazy">
+    </div>
+    <div class="scene-tint"></div>
+    <div class="scene-scrim"></div>
+    <div class="flag-wrap" id="flagWrap">
+      <canvas id="flagCanvas" class="flag-canvas" aria-label="Lá cờ đỏ sao vàng đang tung bay"></canvas>
+      <div class="flag-pole" aria-hidden="true"></div>
+    </div>
+    <div class="scene-body s7-body">
+      <span class="eyebrow" data-anim="up">06 · LÁ CỜ</span>
+      <h2 class="display display--lg">
+        <span class="line"><span data-anim="line" style="--d:0">Lá cờ đỏ</span></span>
+        <span class="line"><span data-anim="line" style="--d:1"><em>sao vàng</em></span></span>
+        <span class="line"><span data-anim="line" style="--d:2">tung bay</span></span>
+      </h2>
+      <p class="lede" data-anim="up" style="--d:3">Lần đầu tiên trước quốc dân đồng bào, lá cờ của một nước Việt Nam độc lập được kéo lên giữa Quảng trường Ba Đình.</p>
+    </div>
+    <figure class="photo-credit" data-anim="fade">Cột cờ vườn hoa Ba Đình, 2.9.1945 — ảnh tư liệu</figure>
+  </section>
+
+  <!-- 08 · PHÁO HOA -->
+  <section class="scene scene--s8" id="s8" data-scene="8" data-dur="17000" data-grade="spectrum" aria-label="Cảnh 8: Pháo hoa mừng độc lập">
+    <div class="skyline" aria-hidden="true">
+      <svg viewBox="0 0 1440 220" preserveAspectRatio="none"><path d="M0 220V150h60v-24h44v24h52V96h30l14-40 14 40h30v54h70v-30h56v30h84V70h26l10-52 10 52h26v80h96v-40h60v40h74V110h44v-22h34v22h50v60h96v-34h58v34h86V88h28l12-44 12 44h28v72h110v-26h54v26h96v60z"/></svg>
+    </div>
+    <div class="scene-body s8-body">
+      <span class="eyebrow" data-anim="up">07 · VỠ ÒA</span>
+      <div class="slam" id="slam">
+        <span class="slam-word" data-slam="0">ĐỘC LẬP</span>
+        <span class="slam-sep" aria-hidden="true">—</span>
+        <span class="slam-word" data-slam="1">TỰ DO</span>
+        <span class="slam-sep" aria-hidden="true">—</span>
+        <span class="slam-word" data-slam="2">HẠNH PHÚC</span>
+      </div>
+      <p class="s8-shout" data-anim="shout" style="--d:46">CHÚC MỪNG QUỐC KHÁNH <b>2/9</b></p>
+      <p class="s8-hint" data-anim="fade" style="--d:66">Bấm vào bầu trời để bắn thêm pháo hoa</p>
+    </div>
+  </section>
+
+  <!-- 09 · 81 NĂM -->
+  <section class="scene scene--s9" id="s9" data-scene="9" data-dur="0" data-grade="finale" aria-label="Cảnh 9: 81 năm và nguồn tư liệu">
+    <div class="scene-body s9-body">
+      <span class="eyebrow" data-anim="up">08 · HÔM NAY</span>
+      <div class="big81" data-anim="pop">
+        <b>81</b>
+        <span>NĂM<i>1945 — 2026</i></span>
+      </div>
+      <p class="lede lede--center" data-anim="up" style="--d:1">Từ buổi chiều Ba Đình ấy, một quốc gia đã đi qua 81 năm.</p>
+
+      <div class="s9-actions" data-anim="up" style="--d:2">
+        <button class="btn btn--solid" id="btnReplay" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 11-2.6-5.9M20 4v4.6h-4.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+          Xem lại từ đầu
+        </button>
+        <button class="btn btn--ghost" id="btnShare" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5.5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="18.5" r="2.6"/><path d="M8.4 10.8l7.2-4M8.4 13.2l7.2 4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+          Chia sẻ
+        </button>
+        <button class="btn btn--ghost" id="btnFull2" type="button">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          Toàn màn hình
+        </button>
+      </div>
+
+      <div class="credits" id="credits" data-anim="up" style="--d:3">
+        <h3>Nguồn tư liệu &amp; bản quyền</h3>
+        <dl>
+          <div><dt>Ảnh tư liệu</dt><dd>Trung tâm Lưu trữ Quốc gia III, qua <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Wikimedia Commons</a> — phạm vi công cộng (public domain). Đã số hoá, cắt và nén lại.</dd></div>
+          <div><dt>Lời trích</dt><dd>Tuyên ngôn Độc lập, Hồ Chí Minh, đọc tại Quảng trường Ba Đình ngày 2.9.1945.</dd></div>
+          <div><dt>Nhạc nền</dt><dd>“Heroic Age” — Kevin MacLeod (<a href="https://incompetech.com/" target="_blank" rel="noopener">incompetech.com</a>), giấy phép <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons BY 4.0</a>.</dd></div>
+          <div><dt>Hiệu ứng</dt><dd>Pháo hoa, tàn lửa, cờ tung bay và âm thanh hiệu ứng được dựng bằng mã trong trình duyệt — không dùng video quay sẵn.</dd></div>
+          <div><dt>Phông chữ</dt><dd>Playfair Display &amp; Be Vietnam Pro — SIL Open Font License, tự lưu trữ.</dd></div>
+        </dl>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ══ thanh điều khiển dưới ══ -->
+<footer class="transport" id="transport">
+  <div class="segbar" id="segbar" role="tablist" aria-label="Chọn cảnh"></div>
+
+  <div class="transport-row">
+    <div class="tp-group">
+      <button class="tp" id="btnPrev" type="button" title="Cảnh trước (←)" aria-label="Cảnh trước">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 5.5v13L8 12zM6.5 5.5v13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="tp tp--play" id="btnPlay" type="button" title="Tạm dừng / tiếp tục (Space)" aria-label="Tạm dừng hoặc tiếp tục" aria-pressed="true">
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.5v13M15.5 5.5v13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2v13.6L19 12z"/></svg>
+      </button>
+      <button class="tp" id="btnNext" type="button" title="Cảnh sau (→)" aria-label="Cảnh sau">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5.5v13L16 12zM17.5 5.5v13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="tp" id="btnRestart" type="button" title="Về đầu (R)" aria-label="Về đầu trình chiếu">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 11-2.6-5.9M20 4v4.6h-4.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="tp-time"><b id="tElapsed">0:00</b><span>/</span><i id="tTotal">1:35</i></div>
+
+    <div class="tp-group tp-group--right">
+      <label class="tp-toggle" title="Tự động chuyển cảnh">
+        <input type="checkbox" id="chkAuto" checked>
+        <span class="sw" aria-hidden="true"></span>
+        <span class="tp-toggle-txt">Tự chạy</span>
+      </label>
+
+      <label class="tp-select" title="Tốc độ trình chiếu">
+        <span class="sr-only">Tốc độ</span>
+        <select id="selSpeed">
+          <option value="0.75">0.75×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.5">1.5×</option>
+          <option value="2">2×</option>
+        </select>
+      </label>
+
+      <label class="tp-slider" title="Cường độ pháo hoa và tàn lửa">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2"/></svg>
+        <input type="range" id="rngFx" min="0" max="100" value="70" aria-label="Cường độ hiệu ứng">
+        <output id="fxOut">70</output>
+      </label>
+    </div>
+  </div>
+</footer>
+
+<!-- ══ lớp chuyển cảnh ══ -->
+<div class="wipe" id="wipe" aria-hidden="true"></div>
+
+<!-- ══ bảng nguồn tư liệu ══ -->
+<div class="sheet" id="sheet" hidden>
+  <div class="sheet-bg" data-sheet-close></div>
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <button class="sheet-x" type="button" data-sheet-close aria-label="Đóng">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+    </button>
+    <h2 id="sheetTitle">Nguồn tư liệu</h2>
+    <p class="sheet-lede">Toàn bộ ảnh trong trình chiếu là ảnh tư liệu thật, thuộc phạm vi công cộng. Nhạc nền dùng giấy phép Creative Commons BY 4.0.</p>
+    <ul class="sheet-list">
+      <li><b>Lễ đài Ba Đình</b><span>Trung tâm Lưu trữ Quốc gia III · Wikimedia Commons · public domain</span></li>
+      <li><b>Nhà hát Lớn Hà Nội</b><span>Ảnh tư liệu 1945 · Wikimedia Commons · public domain</span></li>
+      <li><b>Hồ Chí Minh trên lễ đài</b><span>Ảnh tư liệu 2.9.1945 · Wikimedia Commons · public domain</span></li>
+      <li><b>Hồ Chí Minh &amp; Võ Nguyên Giáp</b><span>Hà Nội, tháng 8.1945 · Wikimedia Commons · public domain</span></li>
+      <li><b>Cột cờ Ba Đình</b><span>Ảnh tư liệu 2.9.1945 · Wikimedia Commons · public domain</span></li>
+      <li><b>Bản Tuyên ngôn Độc lập</b><span>Bản đánh máy 3 trang · Trung tâm Lưu trữ Quốc gia III · public domain</span></li>
+      <li><b>“Heroic Age”</b><span>Kevin MacLeod · incompetech.com · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></span></li>
+    </ul>
+    <p class="sheet-foot">Phần pháo hoa, cờ bay, tàn lửa và hiệu ứng âm thanh được dựng bằng mã chạy trong trình duyệt.</p>
+  </div>
+</div>
+
+<audio id="music" src="assets/audio/score.mp3" preload="auto" loop></audio>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/js/fx.js"></script>
+<script src="assets/js/flag.js"></script>
+<script src="assets/js/audio.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>

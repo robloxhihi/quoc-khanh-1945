@@ -1,0 +1,28 @@
+ÂM NHẠC NỀN / BACKGROUND MUSIC
+==============================
+"Heroic Age" — Kevin MacLeod (incompetech.com)
+Giấy phép / Licensed under: Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+Nguồn / Source: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100583
+
+Tệp score.mp3 là bản gốc tải về, không chỉnh sửa nội dung nhạc;
+chỉ dùng làm nhạc nền cho trình chiếu phi thương mại kèm ghi công tác giả.
+The mp3 is the unmodified original track, used as background score with attribution.
+
+Ghi công hiển thị trong trang: cảnh 09 và bảng "Nguồn tư liệu" (nút ⓘ).
+Attribution is displayed in-scene (scene 09) and in the credits sheet (ⓘ button).
+
+ẢNH TƯ LIỆU / ARCHIVAL PHOTOS
+=============================
+Các ảnh trong assets/img/ thuộc phạm vi công cộng (public domain),
+nguồn: Trung tâm Lưu trữ Quốc gia III Việt Nam, qua Wikimedia Commons.
+Đã số hoá, cắt cúp và nén WebP; không thay đổi nội dung lịch sử.
+
+PHÔNG CHỮ / FONTS
+=================
+Playfair Display & Be Vietnam Pro — giấy phép SIL Open Font License 1.1 (OFL),
+tự host trong assets/fonts/ (subset latin + vietnamese).
+
+MÃ NGUỒN TRANG / SITE CODE
+==========================
+HTML/CSS/JS của trình chiếu: dùng tự do cho mục đích học tập và kỷ niệm.
