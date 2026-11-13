@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>02.09.1945 — Đêm Ba Đình · Trình chiếu Quốc khánh Việt Nam</title>
-<meta name="description" content="Trình chiếu điện ảnh toàn màn hình về ngày 2 tháng 9 năm 1945 tại Quảng trường Ba Đình: ảnh tư liệu, nhạc nền, lời Tuyên ngôn Độc lập của Chủ tịch Hồ Chí Minh và pháo hoa.">
+<meta name="description" content="Trình chiếu điện ảnh toàn màn hình về ngày 2 tháng 9 năm 1945 tại Quảng trường Ba Đình: chạm để chuyển cảnh, ảnh tư liệu, hành khúc giải phóng, lời Tuyên ngôn Độc lập của Chủ tịch Hồ Chí Minh và pháo hoa.">
 <meta name="theme-color" content="#0A0714">
 <meta property="og:type" content="website">
 <meta property="og:title" content="02.09.1945 — Đêm Ba Đình">
-<meta property="og:description" content="Một buổi chiều ở Ba Đình, một quốc gia bắt đầu. Trình chiếu 9 cảnh có nhạc, ảnh tư liệu và pháo hoa.">
+<meta property="og:description" content="Một buổi chiều ở Ba Đình, một quốc gia bắt đầu. Trình chiếu 9 cảnh chạm-để-chuyển-cảnh, có nhạc và pháo hoa.">
 <meta property="og:image" content="assets/img/le-dai.webp">
 <meta property="og:locale" content="vi_VN">
 <meta name="twitter:card" content="summary_large_image">
@@ -36,12 +36,12 @@
 <canvas id="fx" class="fx" aria-hidden="true"></canvas>
 <div id="flash" class="flash" aria-hidden="true"></div>
 
-<!-- ══ thanh trên cùng ══ -->
+<!-- ══ thanh trên: nhận diện + số cảnh + một nút âm thanh ══ -->
 <header class="topbar" id="topbar">
-  <a class="brand" href="#gate" id="brandLink">
+  <div class="brand">
     <svg class="brand-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 1.6l3.1 6.9 7.5.8-5.6 5 1.6 7.4L12 17.9 5.4 21.7 7 14.3 1.4 9.3l7.5-.8z"/></svg>
     <span class="brand-txt"><b>02.09.1945</b><i>Đêm Ba Đình</i></span>
-  </a>
+  </div>
 
   <div class="now" aria-live="polite">
     <span class="now-idx" id="nowIdx">00</span>
@@ -56,17 +56,11 @@
       <svg class="i-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9.5l4 5m0-5l-4 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       <span class="ctl-label" id="muteLabel">Âm thanh: BẬT</span>
     </button>
-    <button class="ctl" id="btnFull" type="button" title="Toàn màn hình (F)" aria-label="Toàn màn hình">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    </button>
-    <button class="ctl" id="btnCredits" type="button" title="Nguồn tư liệu & bản quyền" aria-label="Nguồn tư liệu và bản quyền">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M12 10.6v6M12 7.4v.1" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
-    </button>
   </div>
 </header>
 
-<!-- ══ cổng vào ══ -->
-<div class="gate" id="gate">
+<!-- ══ cổng vào: chạm bất kỳ đâu để bắt đầu ══ -->
+<div class="gate" id="gate" role="button" tabindex="0" aria-label="Bắt đầu trình chiếu">
   <div class="gate-inner">
     <span class="gate-kicker">NƯỚC VIỆT NAM DÂN CHỦ CỘNG HÒA · 1945</span>
 
@@ -76,28 +70,19 @@
 
     <h1 class="gate-title">Một buổi chiều ở Ba&nbsp;Đình,<br><em>một quốc gia bắt đầu.</em></h1>
 
-    <p class="gate-sub">Trình chiếu 9 cảnh · ảnh tư liệu thật · nhạc nền · lời Bác Hồ · pháo hoa.<br>Dài khoảng 1 phút 40 giây, tự chạy hoặc bấm để chuyển cảnh.</p>
+    <p class="gate-sub">Trình chiếu 9 cảnh · ảnh tư liệu thật · lời Bác Hồ · pháo hoa.<br>Mỗi lần chạm màn hình là một cảnh mới.</p>
 
-    <div class="gate-cta">
-      <button class="start" id="btnStart" type="button">
-        <span class="start-ring" aria-hidden="true"></span>
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2v13.6L19 12z"/></svg>
-        <span>BẮT ĐẦU TRÌNH CHIẾU</span>
-      </button>
-      <button class="start-quiet" id="btnStartMuted" type="button">Xem mà không cần âm thanh</button>
+    <div class="gate-tap" aria-hidden="true">
+      <span class="gate-tap-ring"></span>
+      <span class="gate-tap-ring gate-tap-ring--2"></span>
+      <svg viewBox="0 0 24 24"><path d="M6.4 4.9a6.2 6.2 0 018.4-.4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M9.2 11.6V5.9a1.8 1.8 0 013.6 0v5.3l3.7.9c1.2.3 2 1.4 1.9 2.6l-.4 4a2.6 2.6 0 01-2.6 2.3h-4.4c-.8 0-1.5-.3-2-.9l-3.5-4.1c-.6-.7-.5-1.8.2-2.4.6-.5 1.5-.5 2.1 0l1.4 1.2z"/></svg>
     </div>
+    <p class="gate-tap-txt">Chạm để bắt đầu</p>
 
     <p class="gate-note">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 010 7" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
       Trình chiếu có nhạc — bật loa để nghe trọn vẹn.
     </p>
-
-    <ul class="gate-keys">
-      <li><kbd>←</kbd><kbd>→</kbd> chuyển cảnh</li>
-      <li><kbd>Space</kbd> tạm dừng</li>
-      <li><kbd>M</kbd> tắt tiếng</li>
-      <li><kbd>F</kbd> toàn màn hình</li>
-    </ul>
   </div>
   <div class="gate-foot">
     <span>Ảnh tư liệu: Trung tâm Lưu trữ Quốc gia III · Wikimedia Commons · phạm vi công cộng</span>
@@ -179,7 +164,7 @@
     <figure class="photo-credit" data-anim="fade">Đội danh dự và lễ đài Ba Đình — Trung tâm Lưu trữ Quốc gia III</figure>
   </section>
 
-  <!-- 04 · NHÂN VẬT -->
+  <!-- 04 · NHÂN VẬT — hành khúc giải phóng nổi lên -->
   <section class="scene scene--s4" id="s4" data-scene="4" data-dur="10000" data-grade="amber" aria-label="Cảnh 4: Chủ tịch Hồ Chí Minh">
     <div class="scene-media scene-media--portrait" data-kb="in">
       <img src="assets/img/bac-ho-doc.webp" alt="Chủ tịch Hồ Chí Minh trên lễ đài tại Quảng trường Ba Đình ngày 2.9.1945" loading="lazy">
@@ -282,7 +267,6 @@
         <span class="slam-word" data-slam="2">HẠNH PHÚC</span>
       </div>
       <p class="s8-shout" data-anim="shout" style="--d:46">CHÚC MỪNG QUỐC KHÁNH <b>2/9</b></p>
-      <p class="s8-hint" data-anim="fade" style="--d:66">Bấm vào bầu trời để bắn thêm pháo hoa</p>
     </div>
   </section>
 
@@ -295,27 +279,14 @@
         <span>NĂM<i>1945 — 2026</i></span>
       </div>
       <p class="lede lede--center" data-anim="up" style="--d:1">Từ buổi chiều Ba Đình ấy, một quốc gia đã đi qua 81 năm.</p>
-
-      <div class="s9-actions" data-anim="up" style="--d:2">
-        <button class="btn btn--solid" id="btnReplay" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 11-2.6-5.9M20 4v4.6h-4.6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
-          Xem lại từ đầu
-        </button>
-        <button class="btn btn--ghost" id="btnShare" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5.5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="18.5" r="2.6"/><path d="M8.4 10.8l7.2-4M8.4 13.2l7.2 4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
-          Chia sẻ
-        </button>
-        <button class="btn btn--ghost" id="btnFull2" type="button">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          Toàn màn hình
-        </button>
-      </div>
+      <p class="s9-hint" data-anim="fade" style="--d:2">Chạm màn hình để xem lại từ đầu</p>
 
       <div class="credits" id="credits" data-anim="up" style="--d:3">
         <h3>Nguồn tư liệu &amp; bản quyền</h3>
         <dl>
           <div><dt>Ảnh tư liệu</dt><dd>Trung tâm Lưu trữ Quốc gia III, qua <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener">Wikimedia Commons</a> — phạm vi công cộng (public domain). Đã số hoá, cắt và nén lại.</dd></div>
           <div><dt>Lời trích</dt><dd>Tuyên ngôn Độc lập, Hồ Chí Minh, đọc tại Quảng trường Ba Đình ngày 2.9.1945.</dd></div>
+          <div><dt>Hành khúc</dt><dd>“The Internationale” (Quốc tế ca) — Pierre De Geyter (1888), phối khí Jerry Engelbach (2003); bản thu phạm vi công cộng qua <a href="https://commons.wikimedia.org/wiki/File:Internationale_orchestral_arrangement.ogg" target="_blank" rel="noopener">Wikimedia Commons</a>. Cử ở đoạn Bác đọc Tuyên ngôn.</dd></div>
           <div><dt>Nhạc nền</dt><dd>“Heroic Age” — Kevin MacLeod (<a href="https://incompetech.com/" target="_blank" rel="noopener">incompetech.com</a>), giấy phép <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">Creative Commons BY 4.0</a>.</dd></div>
           <div><dt>Hiệu ứng</dt><dd>Pháo hoa, tàn lửa, cờ tung bay và âm thanh hiệu ứng được dựng bằng mã trong trình duyệt — không dùng video quay sẵn.</dd></div>
           <div><dt>Phông chữ</dt><dd>Playfair Display &amp; Be Vietnam Pro — SIL Open Font License, tự lưu trữ.</dd></div>
@@ -325,82 +296,17 @@
   </section>
 </main>
 
-<!-- ══ thanh điều khiển dưới ══ -->
-<footer class="transport" id="transport">
-  <div class="segbar" id="segbar" role="tablist" aria-label="Chọn cảnh"></div>
-
-  <div class="transport-row">
-    <div class="tp-group">
-      <button class="tp" id="btnPrev" type="button" title="Cảnh trước (←)" aria-label="Cảnh trước">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 5.5v13L8 12zM6.5 5.5v13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-      </button>
-      <button class="tp tp--play" id="btnPlay" type="button" title="Tạm dừng / tiếp tục (Space)" aria-label="Tạm dừng hoặc tiếp tục" aria-pressed="true">
-        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.5v13M15.5 5.5v13" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
-        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.2v13.6L19 12z"/></svg>
-      </button>
-      <button class="tp" id="btnNext" type="button" title="Cảnh sau (→)" aria-label="Cảnh sau">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5.5v13L16 12zM17.5 5.5v13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-      </button>
-      <button class="tp" id="btnRestart" type="button" title="Về đầu (R)" aria-label="Về đầu trình chiếu">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 11-2.6-5.9M20 4v4.6h-4.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-      </button>
-    </div>
-
-    <div class="tp-time"><b id="tElapsed">0:00</b><span>/</span><i id="tTotal">1:35</i></div>
-
-    <div class="tp-group tp-group--right">
-      <label class="tp-toggle" title="Tự động chuyển cảnh">
-        <input type="checkbox" id="chkAuto" checked>
-        <span class="sw" aria-hidden="true"></span>
-        <span class="tp-toggle-txt">Tự chạy</span>
-      </label>
-
-      <label class="tp-select" title="Tốc độ trình chiếu">
-        <span class="sr-only">Tốc độ</span>
-        <select id="selSpeed">
-          <option value="0.75">0.75×</option>
-          <option value="1" selected>1×</option>
-          <option value="1.5">1.5×</option>
-          <option value="2">2×</option>
-        </select>
-      </label>
-
-      <label class="tp-slider" title="Cường độ pháo hoa và tàn lửa">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><circle cx="12" cy="12" r="3.2"/></svg>
-        <input type="range" id="rngFx" min="0" max="100" value="70" aria-label="Cường độ hiệu ứng">
-        <output id="fxOut">70</output>
-      </label>
-    </div>
-  </div>
+<!-- ══ vạch tiến độ + nhắc chạm (chỉ hiển thị, không bấm được) ══ -->
+<footer class="prog" id="prog">
+  <div class="prog-segs" id="progSegs" aria-hidden="true"></div>
+  <p class="tap-hint" id="tapHint">Chạm màn hình để tiếp tục</p>
 </footer>
 
 <!-- ══ lớp chuyển cảnh ══ -->
 <div class="wipe" id="wipe" aria-hidden="true"></div>
 
-<!-- ══ bảng nguồn tư liệu ══ -->
-<div class="sheet" id="sheet" hidden>
-  <div class="sheet-bg" data-sheet-close></div>
-  <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-    <button class="sheet-x" type="button" data-sheet-close aria-label="Đóng">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
-    </button>
-    <h2 id="sheetTitle">Nguồn tư liệu</h2>
-    <p class="sheet-lede">Toàn bộ ảnh trong trình chiếu là ảnh tư liệu thật, thuộc phạm vi công cộng. Nhạc nền dùng giấy phép Creative Commons BY 4.0.</p>
-    <ul class="sheet-list">
-      <li><b>Lễ đài Ba Đình</b><span>Trung tâm Lưu trữ Quốc gia III · Wikimedia Commons · public domain</span></li>
-      <li><b>Nhà hát Lớn Hà Nội</b><span>Ảnh tư liệu 1945 · Wikimedia Commons · public domain</span></li>
-      <li><b>Hồ Chí Minh trên lễ đài</b><span>Ảnh tư liệu 2.9.1945 · Wikimedia Commons · public domain</span></li>
-      <li><b>Hồ Chí Minh &amp; Võ Nguyên Giáp</b><span>Hà Nội, tháng 8.1945 · Wikimedia Commons · public domain</span></li>
-      <li><b>Cột cờ Ba Đình</b><span>Ảnh tư liệu 2.9.1945 · Wikimedia Commons · public domain</span></li>
-      <li><b>Bản Tuyên ngôn Độc lập</b><span>Bản đánh máy 3 trang · Trung tâm Lưu trữ Quốc gia III · public domain</span></li>
-      <li><b>“Heroic Age”</b><span>Kevin MacLeod · incompetech.com · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a></span></li>
-    </ul>
-    <p class="sheet-foot">Phần pháo hoa, cờ bay, tàn lửa và hiệu ứng âm thanh được dựng bằng mã chạy trong trình duyệt.</p>
-  </div>
-</div>
-
-<audio id="music" src="assets/audio/score.mp3" preload="auto" loop></audio>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<audio id="music" src="assets/audio/score.mp3" preload="auto"></audio>
+<audio id="march" src="assets/audio/march.mp3" preload="auto" loop></audio>
 
 <script src="assets/js/fx.js"></script>
 <script src="assets/js/flag.js"></script>

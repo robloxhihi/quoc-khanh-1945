@@ -1,4 +1,4 @@
-ÂM NHẠC NỀN / BACKGROUND MUSIC
+ÂM NHẠC NỀN / BACKGROUND SCORE
 ==============================
 "Heroic Age" — Kevin MacLeod (incompetech.com)
 Giấy phép / Licensed under: Creative Commons Attribution 4.0 International (CC BY 4.0)
@@ -9,8 +9,17 @@ Tệp score.mp3 là bản gốc tải về, không chỉnh sửa nội dung nh�
 chỉ dùng làm nhạc nền cho trình chiếu phi thương mại kèm ghi công tác giả.
 The mp3 is the unmodified original track, used as background score with attribution.
 
-Ghi công hiển thị trong trang: cảnh 09 và bảng "Nguồn tư liệu" (nút ⓘ).
-Attribution is displayed in-scene (scene 09) and in the credits sheet (ⓘ button).
+HÀNH KHÚC / MARCH (scenes 04–06, under the Declaration)
+======================================================
+"The Internationale" (Quốc tế ca) — nhạc: Pierre De Geyter (1888),
+phối khí dàn nhạc / orchestral arrangement: Jerry Engelbach (2003).
+Bản thu phạm vi công cộng / Public-domain recording via Wikimedia Commons:
+https://commons.wikimedia.org/wiki/File:Internationale_orchestral_arrangement.ogg
+Tệp march.mp3 chuyển mã từ bản OGG gốc (160 kbps), không sửa nội dung.
+Crossfade vào ở cảnh Bác đọc Tuyên ngôn, trả nhạc nền ở cảnh lá cờ.
+
+Ghi công hiển thị ngay trong trang: cảnh 09, mục "Nguồn tư liệu & bản quyền".
+Attribution is displayed in-scene (scene 09 credits block).
 
 ẢNH TƯ LIỆU / ARCHIVAL PHOTOS
 =============================

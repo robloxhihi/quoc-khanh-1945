@@ -1,13 +1,17 @@
 /* ═══════════════════════════════════════════════════════════
-   audio.js — nhạc nền (tệp MP3, CC BY 4.0) + hiệu ứng dựng
+   audio.js — hai track nhạc (score CC BY 4.0 + hành khúc
+   Quốc tế ca PD) crossfade theo cảnh, cùng hiệu ứng dựng
    bằng Web Audio: tiếng phóng, tiếng nổ, lép bép, chuông,
    gió nền, va chạm chữ. Mọi âm thanh gắn với thứ nhìn thấy.
    ═══════════════════════════════════════════════════════════ */
 (function (global) {
   'use strict';
 
-  function AudioEngine(musicEl) {
+  function AudioEngine(musicEl, marchEl) {
     this.music = musicEl;
+    this.march = marchEl || null;
+    this.marchOn = false;
+    this.marchVol = 0;
     this.ctx = null;
     this.ready = false;
     this.muted = false;
@@ -20,6 +24,12 @@
     this._lastCrackle = 0;
     this._wind = null;
     this.noise = null;
+    /* chống đua tranh seek/play: play() khi seek đang chờ sẽ huỷ seek */
+    this._scoreSeeking = false; this._scorePending = false; this._scoreSeekTimer = 0;
+    this._marchSeeking = false; this._marchPending = false; this._marchSeekTimer = 0;
+    var self = this;
+    if (musicEl) musicEl.addEventListener('seeked', function () { self._scoreSeeking = false; });
+    if (marchEl) marchEl.addEventListener('seeked', function () { self._marchSeeking = false; });
   }
 
   AudioEngine.prototype.init = function () {
@@ -86,17 +96,34 @@
     this.resume();
     var m = this.music;
     if (!m) return;
+    var self = this;
     try {
-      if (offset != null && isFinite(offset)) m.currentTime = offset;
+      if (offset != null && isFinite(offset)) {
+        if (Math.abs(m.currentTime - offset) > 0.05) {
+          this._scoreSeeking = true;
+          clearTimeout(this._scoreSeekTimer);
+          this._scoreSeekTimer = setTimeout(function () { self._scoreSeeking = false; }, 2000);
+        }
+        m.currentTime = offset;
+      }
       m.volume = 0;
-      var p = m.play();
-      if (p && p.catch) p.catch(function () {});
-    } catch (e) {}
+      this.curVol = 0;
+      this._scorePending = false;
+      /* tick sẽ play sau khi seek xong — không play() trực tiếp ở đây */
+    } catch (e) { this._scoreSeeking = false; }
   };
 
-  AudioEngine.prototype.pauseMusic = function () { if (this.music) { try { this.music.pause(); } catch (e) {} } };
+  AudioEngine.prototype.pauseMusic = function () {
+    if (this.music) { try { this.music.pause(); } catch (e) {} }
+    if (this.march) { try { this.march.pause(); } catch (e) {} }
+  };
   AudioEngine.prototype.resumeMusic = function () {
-    if (this.music && this.started) { this.resume(); try { var p = this.music.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
+    if (!this.started) return;
+    this.resume();
+    var marchActive = this.marchOn && this.march;
+    var el = marchActive ? this.march : this.music;
+    var seeking = marchActive ? this._marchSeeking : this._scoreSeeking;
+    if (el && !seeking) { try { var p = el.play(); if (p && p.catch) p.catch(function () {}); } catch (e) {} }
   };
 
   AudioEngine.prototype.setMuted = function (v) {
@@ -107,17 +134,87 @@
       this.master.gain.setTargetAtTime(this.muted ? 0 : 1, t, 0.05);
     }
     if (this.music) this.music.muted = this.muted;
+    if (this.march) this.march.muted = this.muted;
   };
 
   AudioEngine.prototype.setDuck = function (v) { this.duck = Math.max(0, Math.min(1, v)); };
 
-  /* nội suy âm lượng nhạc mỗi khung — mượt, không giật */
+  /* ── hành khúc giải phóng: crossfade với nhạc nền ──
+     Bật ở cảnh Bác đọc Tuyên ngôn (4–6), tắt khi sang cảnh cờ. */
+  AudioEngine.prototype.setMarch = function (on) {
+    on = !!on;
+    if (this.marchOn === on) return;
+    this.marchOn = on;
+    if (!this.march) return;
+    if (on) {
+      var self = this;
+      try {
+        if (this.march.currentTime > 0.05) {
+          this._marchSeeking = true;
+          clearTimeout(this._marchSeekTimer);
+          this._marchSeekTimer = setTimeout(function () { self._marchSeeking = false; }, 2000);
+        }
+        this.march.currentTime = 0;
+        this.march.volume = 0;
+        this.marchVol = 0;
+        /* không play() ở đây — tick sẽ play sau khi seek xong */
+      } catch (e) { this._marchSeeking = false; }
+    }
+    /* tắt: tick sẽ fade marchVol về 0 rồi tự pause */
+  };
+
+  AudioEngine.prototype.seekScore = function (sec) {
+    if (!this.music || !isFinite(sec)) return;
+    var self = this;
+    this._scoreSeeking = true;
+    clearTimeout(this._scoreSeekTimer);
+    this._scoreSeekTimer = setTimeout(function () { self._scoreSeeking = false; }, 2000);
+    try { this.music.currentTime = sec; } catch (e) { this._scoreSeeking = false; }
+  };
+
+  AudioEngine.prototype.resetMarch = function () {
+    this.marchOn = false;
+    this.marchVol = 0;
+    this._marchSeeking = false;
+    clearTimeout(this._marchSeekTimer);
+    if (this.march) { try { this.march.pause(); this.march.currentTime = 0; this.march.volume = 0; } catch (e) {} }
+  };
+
+  /* nội suy âm lượng hai track mỗi khung — crossfade mượt, không giật.
+     Track nào chìm về 0 thì tự pause, track nào nổi lên thì tự play.
+     play() chỉ gọi MỘT lần và không gọi khi seek đang chờ — tránh đua
+     tranh khiến Chrome huỷ seek, nhảy về 0. */
+  AudioEngine.prototype._autoPlay = function (el, seekingKey, pendingKey) {
+    if (el.paused && !this[seekingKey] && !this[pendingKey]) {
+      this[pendingKey] = true;
+      var self = this, p = el.play();
+      if (p && p.then) p.then(function () { self[pendingKey] = false; }, function () { self[pendingKey] = false; });
+      else this[pendingKey] = false;
+    }
+  };
+
   AudioEngine.prototype.tick = function (dt) {
-    if (!this.music) return;
-    var target = this.muted ? 0 : this.baseVol * this.duck * (this.started ? 1 : 0);
-    this.curVol += (target - this.curVol) * Math.min(1, dt * 5.5);
-    if (Math.abs(this.curVol - target) < 0.002) this.curVol = target;
-    try { this.music.volume = Math.max(0, Math.min(1, this.curVol)); } catch (e) {}
+    var k = Math.min(1, dt * 5.5);
+    if (this.music) {
+      var st = (this.started && !this.marchOn && !this.muted) ? this.baseVol * this.duck : 0;
+      this.curVol += (st - this.curVol) * k;
+      if (Math.abs(this.curVol - st) < 0.002) this.curVol = st;
+      try {
+        this.music.volume = Math.max(0, Math.min(1, this.curVol));
+        if (st > 0.02 && this.started) this._autoPlay(this.music, '_scoreSeeking', '_scorePending');
+        else if (st === 0 && this.curVol < 0.02 && !this.music.paused) this.music.pause();
+      } catch (e) {}
+    }
+    if (this.march) {
+      var mt = (this.started && this.marchOn && !this.muted) ? this.baseVol * 0.98 : 0;
+      this.marchVol += (mt - this.marchVol) * k;
+      if (Math.abs(this.marchVol - mt) < 0.002) this.marchVol = mt;
+      try {
+        this.march.volume = Math.max(0, Math.min(1, this.marchVol));
+        if (mt > 0.02 && this.started) this._autoPlay(this.march, '_marchSeeking', '_marchPending');
+        else if (mt === 0 && this.marchVol < 0.02 && !this.march.paused) this.march.pause();
+      } catch (e) {}
+    }
   };
 
   AudioEngine.prototype._pan = function (node, x) {

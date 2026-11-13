@@ -1,6 +1,7 @@
 /* ═══════════════════════════════════════════════════════════
-   main.js — bộ máy trình chiếu: 9 cảnh, timeline, chữ động,
-   pháo hoa đồng bộ, điều khiển, bàn phím, vuốt, toàn màn hình.
+   main.js — trình chiếu chạm-để-chuyển-cảnh.
+   Không nút điều khiển: chạm màn hình = sang cảnh, chạm ở cảnh
+   cuối = chiếu lại. Một nút âm thanh duy nhất ở góc trên.
    Một vòng requestAnimationFrame duy nhất cho toàn bộ trang.
    ═══════════════════════════════════════════════════════════ */
 (function (global) {
@@ -10,24 +11,23 @@
   var $ = function (s, r) { return (r || doc).querySelector(s); };
   var $$ = function (s, r) { return Array.prototype.slice.call((r || doc).querySelectorAll(s)); };
 
+  /* march: cảnh Bác đọc Tuyên ngôn cử hành khúc giải phóng */
   var CFG = [
     { id: 's1', name: 'Mở màn',      dur: 9000,  fx: 'ambient', lvl: 0.40, duck: 0.94, wind: true,  step: 0 },
     { id: 's2', name: 'Bối cảnh',    dur: 10000, fx: 'ambient', lvl: 0.26, duck: 1.00, wind: true,  step: 0 },
     { id: 's3', name: 'Lễ đài',      dur: 10000, fx: 'ambient', lvl: 0.44, duck: 1.00, wind: false, step: 0 },
-    { id: 's4', name: 'Hồ Chí Minh', dur: 10000, fx: 'ambient', lvl: 0.30, duck: 0.88, wind: false, step: 0 },
-    { id: 's5', name: 'Tuyên ngôn',  dur: 16000, fx: 'ambient', lvl: 0.10, duck: 0.32, wind: false, step: 145, kinetic: ['kinetic1'] },
-    { id: 's6', name: 'Lời thề',     dur: 13000, fx: 'ambient', lvl: 0.20, duck: 0.48, wind: false, step: 100, kinetic: ['kinetic2', 'kinetic3'] },
+    { id: 's4', name: 'Hồ Chí Minh', dur: 10000, fx: 'ambient', lvl: 0.30, duck: 0.88, wind: false, step: 0, march: true },
+    { id: 's5', name: 'Tuyên ngôn',  dur: 16000, fx: 'ambient', lvl: 0.10, duck: 0.32, wind: false, step: 145, march: true, kinetic: ['kinetic1'] },
+    { id: 's6', name: 'Lời thề',     dur: 13000, fx: 'ambient', lvl: 0.20, duck: 0.48, wind: false, step: 100, march: true, kinetic: ['kinetic2', 'kinetic3'] },
     { id: 's7', name: 'Lá cờ',       dur: 10000, fx: 'ambient', lvl: 0.55, duck: 0.96, wind: false, step: 0, flag: true },
     { id: 's8', name: 'Pháo hoa',    dur: 17000, fx: 'finale',  lvl: 1.00, duck: 1.00, wind: false, step: 0, slam: true },
     { id: 's9', name: '81 năm',      dur: 0,     fx: 'ambient', lvl: 0.50, duck: 0.55, wind: false, step: 0, hold: true }
   ];
-  var TOTAL = CFG.reduce(function (a, c) { return a + c.dur; }, 0);
 
   var state = {
-    started: false, playing: false, idx: -1,
-    inScene: 0, speed: 1, auto: true,
-    fxDensity: 0.7, muted: false,
-    timers: [], hiddenWasPlaying: false, lastT: 0, raf: 0
+    started: false, idx: -1, inScene: 0,
+    muted: false, hiddenPaused: false,
+    timers: [], lastT: 0, raf: 0, advances: 0, lastTap: 0
   };
 
   var els = {};
@@ -35,18 +35,8 @@
   var reduced = global.matchMedia && global.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ── tiện ích ───────────────────────────────────────── */
-  function fmt(ms) {
-    var s = Math.max(0, Math.round(ms / 1000));
-    return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
-  }
   function later(fn, ms) { var t = global.setTimeout(fn, ms); state.timers.push(t); return t; }
   function clearTimers() { state.timers.forEach(global.clearTimeout); state.timers.length = 0; }
-  function toast(msg) {
-    els.toast.textContent = msg;
-    els.toast.classList.add('show');
-    global.clearTimeout(toast._t);
-    toast._t = global.setTimeout(function () { els.toast.classList.remove('show'); }, 2400);
-  }
 
   /* ── tách chữ cho kinetic typography, giữ nguyên <mark> ── */
   function splitWords(root) {
@@ -81,28 +71,23 @@
     return n;
   }
 
-  /* ── thanh phân cảnh ────────────────────────────────── */
-  function buildSegs() {
-    els.segbar.innerHTML = '';
+  /* ── vạch tiến độ 9 cảnh (chỉ hiển thị) ─────────────── */
+  function buildProg() {
+    els.progSegs.innerHTML = '';
     segs = [];
-    CFG.forEach(function (c, i) {
-      var b = doc.createElement('button');
-      b.type = 'button';
-      b.className = 'seg';
-      b.setAttribute('role', 'tab');
-      b.setAttribute('aria-label', 'Cảnh ' + (i + 1) + ': ' + c.name);
-      b.innerHTML = '<span class="seg-fill"></span><span class="seg-tip">' +
-        ('0' + (i + 1)).slice(-2) + ' · ' + c.name + '</span>';
-      b.addEventListener('click', function () { audio.click(); goTo(i, true); });
-      els.segbar.appendChild(b);
-      segs.push({ el: b, fill: $('.seg-fill', b) });
+    CFG.forEach(function () {
+      var i = doc.createElement('i');
+      var b = doc.createElement('b');
+      i.appendChild(b);
+      els.progSegs.appendChild(i);
+      segs.push({ el: i, fill: b });
     });
   }
 
   /* ── vào cảnh ───────────────────────────────────────── */
-  function goTo(i, manual) {
+  function goTo(i) {
     i = Math.max(0, Math.min(CFG.length - 1, i));
-    if (i === state.idx && !manual) return;
+    if (i === state.idx) return;
     clearTimers();
 
     var prev = state.idx;
@@ -119,23 +104,26 @@
       later(function () { scenes[prev].classList.remove('leaving'); }, 900);
     }
 
-    // kinetic: gỡ rồi bật lại để lần xem sau vẫn chạy
     $$('[data-kinetic]').forEach(function (q) { q.classList.remove('in'); });
 
     segs.forEach(function (s, k) {
       s.el.classList.toggle('current', k === i);
       s.el.classList.toggle('done', k < i);
-      s.el.setAttribute('aria-selected', k === i ? 'true' : 'false');
       s.fill.style.transform = 'scaleX(' + (k < i ? 1 : 0) + ')';
     });
 
     els.nowIdx.textContent = ('0' + (i + 1)).slice(-2);
     els.nowName.textContent = c.name;
+    els.tapHint.textContent = c.hold ? 'Chạm màn hình để xem lại từ đầu' : 'Chạm màn hình để tiếp tục';
 
     // hiệu ứng nền theo cảnh
     fx.setMode(c.fx);
-    fx.setDensity(state.fxDensity * c.lvl);
-    if (c.fx === 'finale' && !reduced) { fx.volley(i === 7 ? 5 : 3, { power: 1.2 }); }
+    fx.setDensity(0.7 * c.lvl);
+    if (c.fx === 'finale' && !reduced) fx.volley(i === 7 ? 5 : 3, { power: 1.2 });
+
+    // nhạc: hành khúc giải phóng ở đoạn Tuyên ngôn, còn lại nhạc nền
+    if (!c.march && prev >= 0 && CFG[prev].march && i >= 6) audio.seekScore(52);
+    audio.setMarch(!!c.march);
     audio.setDuck(c.duck);
     audio.wind(c.wind && !state.muted);
     if (prev !== i) audio.whoosh();
@@ -157,7 +145,6 @@
         var delay = parseInt(q.dataset.delay || '260', 10);
         later(function () {
           q.classList.add('in');
-          // chuông nhẹ đúng lúc eachmark sáng lên
           $$('mark', q).forEach(function (m) {
             var mi = parseInt(m.style.getPropertyValue('--mi') || '0', 10);
             later(function () { audio.chime(660 + Math.random() * 620, 0.055); }, mi * c.step + 320);
@@ -167,22 +154,19 @@
     }
 
     // cờ tung bay
-    if (c.flag) { later(function () { flag.resize(); }, 60); }
+    if (c.flag) later(function () { flag.resize(); }, 60);
 
     // pháo hoa + chữ đập
     if (c.slam) runSlam();
 
-    // cảnh cuối: giữ, không tự trôi; trời dịu lại để đọc nguồn tư liệu
+    // cảnh cuối: giữ, trời dịu lại, thỉnh thoảng một loạt pháo
     if (c.hold) {
-      state.playing = true;
-      syncPlayBtn();
       later(function () { fx.volley(4, { power: 1.1 }); }, 700);
       (function pulse() {
         later(function () { fx.volley(3, { power: 1.0 }); pulse(); }, 12000);
       })();
     }
 
-    if (manual && !state.playing) { state.playing = true; syncPlayBtn(); audio.resumeMusic(); }
     updateProgress();
   }
 
@@ -208,7 +192,6 @@
         fx.volley(2, { power: 1.0 });
       }, times[k]);
     });
-    if (seps[2]) later(function () { seps[2].classList.add('on'); }, 4500);
 
     later(function () { fx.volley(7, { power: 1.35 }); popFlash(); }, 6600);
     later(function () { fx.volley(5, { power: 1.2 }); }, 10200);
@@ -227,21 +210,18 @@
     var c = CFG[state.idx] || CFG[0];
     var p = c.dur > 0 ? Math.min(1, state.inScene / c.dur) : 1;
     if (segs[state.idx]) segs[state.idx].fill.style.transform = 'scaleX(' + p + ')';
-    var before = 0;
-    for (var k = 0; k < state.idx; k++) before += CFG[k].dur;
-    els.tElapsed.textContent = fmt(before + Math.min(state.inScene, c.dur || 0));
   }
 
-  function syncPlayBtn() {
-    els.btnPlay.setAttribute('aria-pressed', state.playing ? 'true' : 'false');
-    els.btnPlay.title = state.playing ? 'Tạm dừng (Space)' : 'Tiếp tục (Space)';
+  /* ── chạm để sang cảnh ──────────────────────────────── */
+  function next() {
+    if (!state.started) { start(); return; }
+    state.advances++;
+    if (state.advances >= 3) els.tapHint.classList.add('dim');
+    if (state.idx >= CFG.length - 1) restart();
+    else goTo(state.idx + 1);
   }
-
-  function setPlaying(v) {
-    state.playing = !!v;
-    syncPlayBtn();
-    if (state.playing) { audio.resumeAll(); }
-    else { audio.pauseMusic(); }
+  function prev() {
+    if (state.started && state.idx > 0) goTo(state.idx - 1);
   }
 
   /* ── vòng lặp chính ─────────────────────────────────── */
@@ -254,17 +234,13 @@
 
     audio.tick(dt);
 
-    if (state.playing && state.started) {
+    if (state.started && !state.hiddenPaused) {
       fx.tick(dt);
       if (CFG[state.idx] && CFG[state.idx].flag) flag.tick(ts / 1000);
 
       var c = CFG[state.idx];
       if (c && c.dur > 0) {
-        state.inScene += dt * 1000 * state.speed;
-        if (state.inScene >= c.dur) {
-          if (state.auto) { goTo(state.idx + 1, false); }
-          else { state.inScene = c.dur; }
-        }
+        state.inScene = Math.min(c.dur, state.inScene + dt * 1000);
         updateProgress();
       }
 
@@ -279,22 +255,19 @@
   }
 
   /* ── bắt đầu ────────────────────────────────────────── */
-  function start(muted) {
+  function start() {
     if (state.started) return;
     state.started = true;
-    state.muted = !!muted;
     doc.body.classList.add('started');
     els.gate.setAttribute('aria-hidden', 'true');
+    els.gate.removeAttribute('tabindex');
 
     audio.init();
-    audio.setMuted(state.muted);
+    audio.setMuted(false);
     syncMute();
     audio.startMusic(0);
     audio.resume();
-
-    state.playing = true;
-    syncPlayBtn();
-    goTo(0, true);
+    goTo(0);
     state.lastT = 0;
 
     // tải trước ảnh các cảnh sau
@@ -303,8 +276,6 @@
         if (im.loading === 'lazy') { var p = new Image(); p.src = im.currentSrc || im.src; }
       });
     }, 1200);
-
-    later(function () { toast('Dùng ← → để chuyển cảnh · Space để tạm dừng'); }, 2600);
   }
 
   function restart() {
@@ -313,16 +284,15 @@
     $$('[data-kinetic]').forEach(function (q) { q.classList.remove('in'); });
     $$('.slam-word').forEach(function (w) { w.classList.remove('hit'); });
     $$('.slam-sep').forEach(function (s) { s.classList.remove('on'); });
-    try { audio.music.currentTime = 0; } catch (e) {}
+    audio.resetMarch();
     audio.startMusic(0);
     state.idx = -1;
-    state.playing = true;
-    syncPlayBtn();
-    goTo(0, true);
-    toast('Về đầu trình chiếu');
+    state.advances = 0;
+    els.tapHint.classList.remove('dim');
+    goTo(0);
   }
 
-  /* ── âm thanh ───────────────────────────────────────── */
+  /* ── âm thanh: một nút duy nhất ─────────────────────── */
   function syncMute() {
     els.btnMute.setAttribute('aria-pressed', state.muted ? 'true' : 'false');
     els.muteLabel.textContent = state.muted ? 'Âm thanh: TẮT' : 'Âm thanh: BẬT';
@@ -335,67 +305,22 @@
     else if (CFG[state.idx]) audio.wind(CFG[state.idx].wind);
     syncMute();
     if (!state.muted) audio.click();
-    toast(state.muted ? 'Đã tắt toàn bộ âm thanh' : 'Đã bật âm thanh');
-  }
-
-  /* ── toàn màn hình ──────────────────────────────────── */
-  function toggleFull() {
-    var d = doc, el = d.documentElement;
-    var isFull = d.fullscreenElement || d.webkitFullscreenElement;
-    if (!isFull) {
-      var fn = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (fn) { try { fn.call(el); } catch (e) { toast('Trình duyệt không cho toàn màn hình'); } }
-      else toast('Trình duyệt không hỗ trợ toàn màn hình');
-    } else {
-      var ex = d.exitFullscreen || d.webkitExitFullscreen;
-      if (ex) { try { ex.call(d); } catch (e) {} }
-    }
-  }
-
-  /* ── bảng nguồn ─────────────────────────────────────── */
-  function openSheet() {
-    els.sheet.hidden = false;
-    $('.sheet-x', els.sheet).focus();
-    audio.click();
-  }
-  function closeSheet() {
-    if (els.sheet.hidden) return;
-    els.sheet.hidden = true;
-    els.btnCredits.focus();
-  }
-
-  /* ── chia sẻ ────────────────────────────────────────── */
-  function share() {
-    var url = global.location.href.split('#')[0];
-    var data = { title: '02.09.1945 — Đêm Ba Đình', text: 'Một buổi chiều ở Ba Đình, một quốc gia bắt đầu.', url: url };
-    if (navigator.share) {
-      navigator.share(data).catch(function () {});
-    } else if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(function () { toast('Đã chép liên kết vào clipboard'); },
-        function () { toast(url); });
-    } else { toast(url); }
   }
 
   /* ── lắp ráp ────────────────────────────────────────── */
   function init() {
     els = {
       gate: $('#gate'), stage: $('#stage'), fx: $('#fx'), flash: $('#flash'), wipe: $('#wipe'),
-      topbar: $('#topbar'), transport: $('#transport'), segbar: $('#segbar'),
       nowIdx: $('#nowIdx'), nowName: $('#nowName'),
-      btnMute: $('#btnMute'), muteLabel: $('#muteLabel'), btnFull: $('#btnFull'), btnCredits: $('#btnCredits'),
-      btnStart: $('#btnStart'), btnStartMuted: $('#btnStartMuted'),
-      btnPrev: $('#btnPrev'), btnNext: $('#btnNext'), btnPlay: $('#btnPlay'), btnRestart: $('#btnRestart'),
-      btnReplay: $('#btnReplay'), btnShare: $('#btnShare'), btnFull2: $('#btnFull2'),
-      chkAuto: $('#chkAuto'), selSpeed: $('#selSpeed'), rngFx: $('#rngFx'), fxOut: $('#fxOut'),
-      tElapsed: $('#tElapsed'), tTotal: $('#tTotal'),
-      sheet: $('#sheet'), toast: $('#toast'), music: $('#music'),
-      flagCanvas: $('#flagCanvas')
+      btnMute: $('#btnMute'), muteLabel: $('#muteLabel'),
+      progSegs: $('#progSegs'), tapHint: $('#tapHint'),
+      music: $('#music'), march: $('#march'), flagCanvas: $('#flagCanvas')
     };
     scenes = $$('.scene');
 
     fx = new global.FX(els.fx);
     fx.reduced = reduced;
-    fx.setDensity(state.fxDensity * 0.4);
+    fx.setDensity(0.7 * 0.4);
     fx.setMode('ambient');
     fx.onBurst = function (x, y, power) {
       audio.boom(power, x);
@@ -405,106 +330,43 @@
     fx.onCrackle = function () { audio.crackle(); };
 
     flag = new global.WavingFlag(els.flagCanvas);
-    audio = new global.AudioEngine(els.music);
-    audio.music.loop = false;
+    audio = new global.AudioEngine(els.music, els.march);
     els.music.addEventListener('ended', function () {
-      // hết bài: cảnh cuối thì lặp đoạn cao trào, còn lại chạy lại từ đầu
-      var at = state.idx >= 7 ? 52 : 0;
-      try { audio.music.currentTime = at; } catch (e) {}
-      if (state.playing) audio.resumeMusic();
+      // hết bài: đoạn cao trào cho pháo hoa, còn lại chạy từ đầu
+      audio.seekScore(state.idx >= 7 ? 52 : 0);
+      if (state.started && !state.hiddenPaused && !audio.marchOn) audio.resumeMusic();
     });
 
-    els.tTotal.textContent = fmt(TOTAL);
-    buildSegs();
+    buildProg();
     scenes.forEach(function (s) { s.setAttribute('aria-hidden', 'true'); });
 
-    /* cổng vào */
-    els.btnStart.addEventListener('click', function () { start(false); });
-    els.btnStartMuted.addEventListener('click', function () { start(true); });
-    $('#brandLink').addEventListener('click', function (e) {
-      e.preventDefault();
-      if (state.started) { audio.click(); restart(); }
+    /* chạm bất kỳ đâu: bắt đầu, rồi sang cảnh */
+    doc.addEventListener('click', function (e) {
+      if (e.target.closest('#btnMute')) return;   // nút âm thanh tự xử lý
+      if (e.target.closest('a')) return;          // giữ liên kết nguồn tư liệu
+      var now = Date.now();
+      if (now - state.lastTap < 320) return;      // chặn chạm đúp nhảy hai cảnh
+      state.lastTap = now;
+      next();
     });
 
-    /* điều khiển */
-    els.btnPrev.addEventListener('click', function () { audio.click(); goTo(state.idx - 1, true); });
-    els.btnNext.addEventListener('click', function () { audio.click(); goTo(state.idx + 1, true); });
-    els.btnPlay.addEventListener('click', function () { audio.click(); setPlaying(!state.playing); });
-    els.btnRestart.addEventListener('click', function () { audio.click(); restart(); });
-    els.btnReplay.addEventListener('click', function () { audio.click(); restart(); });
-    els.btnShare.addEventListener('click', function () { audio.click(); share(); });
-    els.btnFull.addEventListener('click', function () { audio.click(); toggleFull(); });
-    els.btnFull2.addEventListener('click', function () { audio.click(); toggleFull(); });
-    els.btnMute.addEventListener('click', toggleMute);
-    els.btnCredits.addEventListener('click', openSheet);
-    $$('[data-sheet-close]', els.sheet).forEach(function (n) { n.addEventListener('click', closeSheet); });
-
-    els.chkAuto.addEventListener('change', function () {
-      state.auto = els.chkAuto.checked;
-      audio.click();
-      toast(state.auto ? 'Tự động chuyển cảnh' : 'Giữ cảnh hiện tại');
-    });
-    els.selSpeed.addEventListener('change', function () {
-      state.speed = parseFloat(els.selSpeed.value) || 1;
-      audio.click();
-      toast('Tốc độ ' + els.selSpeed.value + '×');
-    });
-    els.rngFx.addEventListener('input', function () {
-      state.fxDensity = parseInt(els.rngFx.value, 10) / 100;
-      els.fxOut.textContent = els.rngFx.value;
-      var c = CFG[state.idx] || CFG[0];
-      fx.setDensity(state.fxDensity * c.lvl);
+    els.btnMute.addEventListener('click', function (e) {
+      e.stopPropagation();
+      toggleMute();
     });
 
-    /* bàn phím */
+    /* bàn phím tối giản */
     doc.addEventListener('keydown', function (e) {
       var tag = (e.target && e.target.tagName) || '';
-      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') {
-        if (e.key === 'Escape') e.target.blur();
-        return;
-      }
-      if (!state.started) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); start(false); }
-        return;
-      }
+      if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+      if (tag === 'BUTTON' && (e.key === ' ' || e.key === 'Enter')) return;
       switch (e.key) {
-        case 'ArrowRight': case 'PageDown': e.preventDefault(); goTo(state.idx + 1, true); break;
-        case 'ArrowLeft': case 'PageUp': e.preventDefault(); goTo(state.idx - 1, true); break;
-        case ' ': case 'k': e.preventDefault(); setPlaying(!state.playing); break;
+        case 'ArrowRight': case 'PageDown': case ' ': case 'Enter':
+          e.preventDefault(); next(); break;
+        case 'ArrowLeft': case 'PageUp':
+          e.preventDefault(); prev(); break;
         case 'm': case 'M': toggleMute(); break;
-        case 'f': case 'F': toggleFull(); break;
-        case 'r': case 'R': restart(); break;
-        case 'Escape': if (!els.sheet.hidden) closeSheet(); break;
-        case 'Home': e.preventDefault(); goTo(0, true); break;
-        case 'End': e.preventDefault(); goTo(CFG.length - 1, true); break;
-        default:
-          if (/^[1-9]$/.test(e.key)) goTo(parseInt(e.key, 10) - 1, true);
       }
-    });
-
-    /* vuốt trên cảm ứng */
-    var tx = 0, ty = 0, tt = 0, swiping = false;
-    els.stage.addEventListener('touchstart', function (e) {
-      if (e.touches.length !== 1) return;
-      tx = e.touches[0].clientX; ty = e.touches[0].clientY; tt = Date.now(); swiping = true;
-    }, { passive: true });
-    els.stage.addEventListener('touchend', function (e) {
-      if (!swiping) return;
-      swiping = false;
-      var t = e.changedTouches[0];
-      var dx = t.clientX - tx, dy = t.clientY - ty;
-      if (Date.now() - tt > 700) return;
-      if (Math.abs(dx) > 56 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-        goTo(state.idx + (dx < 0 ? 1 : -1), true);
-      }
-    }, { passive: true });
-
-    /* bấm lên trời để bắn pháo hoa */
-    els.stage.addEventListener('click', function (e) {
-      if (state.idx < 7) return;
-      if (e.target.closest('button, a, input, select, label')) return;
-      fx.burst(e.clientX, e.clientY, { power: 1.25, type: ['peony', 'chrys', 'ring', 'double', 'willow'][(Math.random() * 5) | 0] });
-      popFlash();
     });
 
     /* resize */
@@ -520,23 +382,13 @@
     /* rời tab thì tạm dừng, quay lại thì chạy tiếp */
     doc.addEventListener('visibilitychange', function () {
       if (doc.hidden) {
-        state.hiddenWasPlaying = state.playing;
-        if (state.playing) setPlaying(false);
+        state.hiddenPaused = true;
         audio.suspendAll();
       } else {
+        state.hiddenPaused = false;
         state.lastT = 0;
         audio.resumeAll();
-        if (state.hiddenWasPlaying && state.started) setPlaying(true);
       }
-    });
-
-    /* trạng thái toàn màn hình */
-    ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
-      doc.addEventListener(ev, function () {
-        var on = !!(doc.fullscreenElement || doc.webkitFullscreenElement);
-        els.btnFull.setAttribute('aria-pressed', on ? 'true' : 'false');
-        global.setTimeout(function () { fx.resize(); flag.resize(); }, 120);
-      });
     });
 
     /* giảm chuyển động */
@@ -545,7 +397,7 @@
       var onMq = function () {
         reduced = mq.matches;
         fx.reduced = reduced;
-        if (reduced) { fx.clear(); toast('Đã giảm hiệu ứng theo cài đặt hệ thống'); }
+        if (reduced) fx.clear();
       };
       if (mq.addEventListener) mq.addEventListener('change', onMq);
       else if (mq.addListener) mq.addListener(onMq);

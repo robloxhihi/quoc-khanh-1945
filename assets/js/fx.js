@@ -96,7 +96,8 @@
     opts = opts || {};
     var w = this.w, h = this.h;
     if (x == null) x = rnd(w * 0.08, w * 0.92);
-    if (targetY == null) targetY = rnd(h * 0.12, h * 0.46);
+    /* finale: nổ ở trời trên để dải chữ ĐỘC LẬP — TỰ DO — HẠNH PHÚC luôn đọc được */
+    if (targetY == null) targetY = this.mode === 'finale' ? rnd(h * 0.07, h * 0.28) : rnd(h * 0.12, h * 0.46);
     var flight = rnd(0.85, 1.35);
     var vy = -(h - targetY) / flight;
     this.rockets.push({
@@ -259,7 +260,7 @@
     if (this.mode !== 'off') {
       for (i = 0; i < this.stars.length; i++) {
         var st = this.stars[i];
-        var tw = 0.34 + 0.66 * Math.abs(Math.sin(this.t * st.s + st.p));
+        var tw = this.reduced ? 0.85 : 0.34 + 0.66 * Math.abs(Math.sin(this.t * st.s + st.p));
         ctx.fillStyle = rgba(st.c, tw * 0.5 * (0.3 + this.density * 0.7));
         ctx.beginPath(); ctx.arc(st.x, st.y, st.r, 0, TAU); ctx.fill();
       }
